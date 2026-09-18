@@ -18,6 +18,7 @@ used under the terms of the following licenses:
 | lcms          | MIT License                                                                                               |
 | libarchive    | BSD 2-Clause                                                                                              |
 | libexif       | LGPLv3                                                                                                    |
+| libde265      | LGPLv3                                                                                                    |
 | libffi        | MIT License                                                                                               |
 | libheif       | LGPLv3                                                                                                    |
 | libimagequant | [BSD 2-Clause](https://github.com/lovell/libimagequant/blob/main/COPYRIGHT)                               |

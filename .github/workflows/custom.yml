@@ -1,0 +1,70 @@
+name: Standalone CLI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, 'np/**']
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  linux:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            arch: x64
+          - os: ubuntu-24.04-arm
+            arch: arm64
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build standalone CLI
+        run: ./build-cli.sh ${{ matrix.arch }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: vips-${{ matrix.arch }}
+          path: vips-${{ matrix.arch }}
+          if-no-files-found: error
+
+  windows:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x86_64, aarch64]
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          repository: neeraj-pilot/build-win64-mxe
+          ref: np/update-libvips
+      - name: Build standalone CLI
+        run: ./build-cli.sh ${{ matrix.arch }}
+      - uses: actions/upload-artifact@v6
+        with:
+          name: vips-${{ matrix.arch }}.exe
+          path: output/vips-${{ matrix.arch }}.exe
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [linux, windows]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: vips-*
+          merge-multiple: true
+      - name: Create draft release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: vips-x64,vips-arm64,vips-x86_64.exe,vips-aarch64.exe
+          draft: true
+          allowUpdates: true
+          updateOnlyUnreleased: true
